@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYNALUM | Synergy Alumni & Mahasiswa</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@500;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        syn: {
+                            teal: '#0a6c75',     /* Primary */
+                            'teal-dark': '#064a51',
+                            orange: '#f2994a',   /* Accent */
+                            'orange-dark': '#d98236',
+                        },
+                        warm: {
+                            50: '#fcfbfa', /* Super soft off-white ala Hoco */
+                            100: '#f5f3ec',
+                            200: '#e8e4da',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'blink': 'blink 1s step-end infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        },
+                        blink: {
+                            '0%, 100%': { opacity: 1 },
+                            '50%': { opacity: 0 },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #fcfbfa; }
+        ::-webkit-scrollbar-thumb { background: #0a6c75; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #064a51; }
+
+        /* Lock Scroll during loading */
+        .lock-scroll { overflow: hidden !important; }
+
+        /* Scroll Reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Glassmorphism Classes */
+        .glass {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+        }
+        .glass-dark {
+            background: rgba(6, 74, 81, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Gradient Text */
+        .text-gradient {
+            background: linear-gradient(135deg, #0a6c75 0%, #0d8c99 50%, #f2994a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Ambient Glow */
+        .ambient-glow {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(242,153,74,0.15) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            z-index: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-warm-50 text-slate-800 font-sans antialiased overflow-x-hidden selection:bg-syn-orange selection:text-white relative lock-scroll">
+
+    <!-- Preloader Animation -->
+    <div id="preloader" class="fixed inset-0 z-[100] flex items-center justify-center">
+        <!-- Split Backgrounds (Top & Bottom) -->
+        <div id="preloader-top" class="absolute top-0 left-0 w-full h-1/2 bg-[#0e1217] transition-transform duration-[1.2s] ease-[cubic-bezier(0.85,0,0.15,1)]"></div>
+        <div id="preloader-bottom" class="absolute bottom-0 left-0 w-full h-1/2 bg-[#0e1217] transition-transform duration-[1.2s] ease-[cubic-bezier(0.85,0,0.15,1)]"></div>
+        
+        <!-- Preloader Content -->
+        <div id="preloader-content" class="relative z-10 flex flex-col items-center transition-opacity duration-500">
+            <i class="fa-solid fa-graduation-cap text-syn-orange text-5xl mb-6 animate-bounce" style="animation-duration: 2s;"></i>
+            <h1 class="font-heading text-4xl md:text-5xl font-extrabold text-white tracking-widest uppercase">
+                SYNALUM
+            </h1>
+            <p class="text-syn-teal font-mono mt-4 text-xs md:text-sm tracking-[0.3em] flex items-center gap-3">
+                LOADING DEMO PREVIEW
+                <span class="flex gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-syn-orange animate-pulse"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-syn-orange animate-pulse" style="animation-delay: 0.2s"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-syn-orange animate-pulse" style="animation-delay: 0.4s"></span>
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Ambient Backgrounds -->
+    <div class="ambient-glow top-[-100px] left-[-100px]"></div>
+    <div class="ambient-glow bottom-[20%] right-[-100px] bg-[radial-gradient(circle,rgba(10,108,117,0.1)_0%,rgba(255,255,255,0)_70%)]"></div>
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 top-0 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center glass rounded-b-2xl mx-2 md:mx-auto mt-2">
+            <a href="#" class="font-heading text-2xl font-extrabold tracking-tight text-syn-teal flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-syn-orange"></i> SYNALUM
+            </a>
+            <div class="hidden md:flex gap-8 font-medium text-sm text-slate-600">
+                <a href="#features" class="hover:text-syn-teal transition-colors">Fitur</a>
+                <a href="#tech" class="hover:text-syn-teal transition-colors">Tech Stack</a>
+                <a href="#dev" class="hover:text-syn-teal transition-colors">Developer</a>
+            </div>
+            <a href="https://github.com/nblauliadka" target="_blank" class="bg-syn-teal text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-syn-teal-dark transition-all hover:shadow-lg flex items-center gap-2">
+                <i class="fa-brands fa-github"></i> Repository
+            </a>
+        </div>
+    </nav>
+
+    <!-- 1. Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center pt-24 pb-12 px-6 z-10">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            
+            <!-- Left Text -->
+            <div class="reveal">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-syn-orange-dark text-xs font-bold uppercase tracking-wide mb-6">
+                    <span class="w-2 h-2 rounded-full bg-syn-orange animate-pulse"></span>
+                    Portfolio Showcase
+                </div>
+                <h1 class="text-5xl md:text-6xl font-heading font-extrabold leading-tight mb-6 text-slate-900">
+                    Jembatan Karir Kampus Anda. <br>
+                    <span class="text-gradient">Tanpa Batas.</span>
+                </h1>
+                <p class="text-lg text-slate-600 mb-8 max-w-lg leading-relaxed">
+                    Platform kolaborasi karier kampus yang menghubungkan **Alumni**, **Mahasiswa**, dan **Dosen** Universitas Syiah Kuala melalui tiga pilar utama: Magang, Mentorship, dan Riset.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="#features" class="px-8 py-4 bg-syn-teal text-white rounded-full font-semibold hover:bg-syn-teal-dark transition-all hover:shadow-[0_8px_20px_rgba(10,108,117,0.3)] hover:-translate-y-1 text-center">
+                        Jelajahi Fitur
+                    </a>
+                    <a href="https://github.com/nblauliadka" target="_blank" class="px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-full font-semibold hover:border-syn-teal hover:text-syn-teal transition-all text-center flex items-center justify-center gap-2 shadow-sm hover:shadow-md">
+                        <i class="fa-brands fa-github text-xl"></i> Lihat Repository
+                    </a>
+                </div>
+            </div>
+
+            <!-- Right Image Mockup (Abstracted for Preview) -->
+            <div class="relative reveal delay-200 animate-float">
+                <!-- Mac Mockup Frame -->
+                <div class="glass border border-white p-2 rounded-[1.5rem] shadow-2xl relative bg-white/40">
+                    <!-- Top bar -->
+                    <div class="flex gap-2 items-center px-4 py-2 mb-2">
+                        <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-amber-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                        <div class="mx-auto text-xs font-mono text-slate-400 bg-white/50 px-20 py-1 rounded-md">synalum-app.local</div>
+                    </div>
+                    <!-- App UI Placeholder (Sekarang jadi Image Beneran) -->
+                    <div class="bg-warm-50 rounded-xl w-full aspect-[4/3] overflow-hidden relative border border-slate-100 flex flex-col group">
+                        
+                        <!-- GANTI SRC INI SAMA NAMA FOTO LO BOS! -->
+                        <!-- Kalo index.html sejajar sama folder public, pakenya: ./public/nama-foto-lo.jpg -->
+                        <img src="./public/synalum.jpeg" alt="Synalum Dashboard Preview" class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700">
+                        
+                        <!-- Overlay pas di-hover (Biar tetep estetik Gen Z) -->
+                        <div class="absolute inset-0 bg-slate-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm pointer-events-none">
+                            <span class="bg-syn-teal text-white px-5 py-2.5 rounded-lg font-mono text-sm font-bold shadow-lg shadow-syn-teal/40 transform -rotate-2">
+                                <i class="fa-solid fa-rocket"></i> Dashboard Preview
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Decorative Elements -->
+                <div class="absolute -right-6 -bottom-6 bg-white p-4 rounded-2xl shadow-xl flex items-center gap-4 animate-bounce" style="animation-duration: 3s;">
+                    <div class="bg-green-100 p-3 rounded-full text-green-600">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium">Status</p>
+                        <p class="font-bold text-slate-800 text-sm">System Ready</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2 & 3. Role Highlights (Bento Grid) -->
+    <section id="features" class="py-24 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-sm font-bold text-syn-orange tracking-widest uppercase mb-2">Designed for Everyone</h2>
+                <h3 class="text-4xl font-heading font-extrabold text-slate-900 mb-4">Satu Platform, Tiga Pilar.</h3>
+                <p class="text-slate-600 max-w-2xl mx-auto text-lg">
+                    Memecahkan masalah <i>disconnect</i> antara dunia kampus dan karir pasca-kampus.
+                </p>
+            </div>
+
+            <!-- Bento Grid Layout -->
+            <div class="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-6 auto-rows-[280px]">
+                
+                <!-- Alumni (Large Block) -->
+                <div class="col-span-1 md:col-span-2 md:row-span-2 rounded-3xl glass p-8 border border-white relative overflow-hidden group reveal hover:-translate-y-1 transition-transform duration-300">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-syn-teal/10 rounded-full blur-3xl group-hover:bg-syn-teal/20 transition-colors"></div>
+                    
+                    <div class="bg-syn-teal w-14 h-14 rounded-2xl flex items-center justify-center text-2xl text-white mb-6 shadow-lg shadow-syn-teal/30">
+                        <i class="fa-solid fa-user-graduate"></i>
+                    </div>
+                    <h3 class="text-3xl font-heading font-bold mb-4 text-slate-900">Ruang Alumni</h3>
+                    <p class="text-slate-600 text-lg mb-8 max-w-md">
+                        Berkontribusi kembali ke almamater. Posting lowongan magang, buka program <i>mentorship</i>, dan kelola pendaftar secara langsung.
+                    </p>
+                    
+                    <ul class="space-y-3 font-medium text-slate-700">
+                        <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-syn-orange"></i> Verifikasi identitas 3-lapis (LinkedIn/Doc)</li>
+                        <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-syn-orange"></i> Review profil applicant</li>
+                        <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-syn-orange"></i> Manajemen mentees</li>
+                    </ul>
+
+                    <div class="absolute bottom-8 right-8 opacity-10 text-9xl group-hover:scale-110 transition-transform duration-500">
+                        <i class="fa-solid fa-briefcase"></i>
+                    </div>
+                </div>
+
+                <!-- Mahasiswa (Top Right) -->
+                <div class="col-span-1 rounded-3xl bg-white p-8 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 reveal flex flex-col justify-center group">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="bg-syn-orange/10 w-12 h-12 rounded-xl flex items-center justify-center text-xl text-syn-orange">
+                            <i class="fa-solid fa-book-open-reader"></i>
+                        </div>
+                        <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-lg">Active Role</span>
+                    </div>
+                    <h3 class="text-xl font-heading font-bold mb-2">Mahasiswa</h3>
+                    <p class="text-sm text-slate-600 mb-4">Jelajahi kesempatan magang, daftar proyek riset, dan bangun portfolio karir sejak dini.</p>
+                    <div class="mt-auto flex items-center text-syn-teal font-semibold text-sm group-hover:translate-x-2 transition-transform">
+                        Explore Opportunities <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </div>
+                </div>
+
+                <!-- Dosen (Bottom Right) -->
+                <div class="col-span-1 rounded-3xl bg-gradient-to-br from-slate-900 to-slate-800 text-white p-8 shadow-sm hover:shadow-xl transition-all duration-300 reveal flex flex-col justify-center relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 opacity-20 text-6xl group-hover:rotate-12 transition-transform">
+                        <i class="fa-solid fa-microscope"></i>
+                    </div>
+                    <div class="bg-white/10 w-12 h-12 rounded-xl flex items-center justify-center text-xl text-white mb-4 backdrop-blur-sm">
+                        <i class="fa-solid fa-chalkboard-user"></i>
+                    </div>
+                    <h3 class="text-xl font-heading font-bold mb-2">Dosen & Akademik</h3>
+                    <p class="text-sm text-slate-300">
+                        Posting riset atau proyek resmi yang didukung kampus. Temukan asisten peneliti dari kalangan mahasiswa terbaik.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Tech Stack Showcase -->
+    <section id="tech" class="py-24 bg-syn-teal-dark text-white relative overflow-hidden mt-12 rounded-[3rem] mx-4 md:mx-8 shadow-2xl">
+        <!-- Abstract Patterns -->
+        <div class="absolute top-0 right-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')]"></div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl font-heading font-extrabold mb-4">Modern Tech Stack. <br><span class="text-syn-orange">Zero Cloud Headache.</span></h2>
+                <p class="text-slate-300 max-w-xl mx-auto">
+                    Dibangun dengan arsitektur yang solid, aman, namun sangat mudah dijalankan secara lokal tanpa perlu setting <i>credentials</i> awan.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <!-- Stack 1 -->
+                <div class="glass-dark p-6 rounded-2xl text-center hover:-translate-y-2 transition-transform reveal border border-white/10">
+                    <i class="fa-brands fa-react text-5xl text-[#61DAFB] mb-4"></i>
+                    <h4 class="font-bold text-lg">React 19 + Vite</h4>
+                    <p class="text-xs text-slate-400 mt-2">Frontend kilat dengan routing tersistemati.</p>
+                </div>
+                <!-- Stack 2 -->
+                <div class="glass-dark p-6 rounded-2xl text-center hover:-translate-y-2 transition-transform reveal delay-100 border border-white/10">
+                    <!-- Tailwind Custom SVG icon fallback -->
+                    <svg class="w-12 h-12 mx-auto mb-4 text-[#38B2AC]" viewBox="0 0 24 24" fill="currentColor"><path d="M12.001,4.8c-3.2,0-5.2,1.6-6,4.8c1.2-1.6,2.6-2.2,4.2-1.8c0.913,0.228,1.565,0.89,2.288,1.624 C13.666,10.618,15.027,12,18.001,12c3.2,0,5.2-1.6,6-4.8c-1.2,1.6-2.6,2.2-4.2,1.8c-0.913-0.228-1.565-0.89-2.288-1.624 C16.337,6.182,14.976,4.8,12.001,4.8z M6.001,12c-3.2,0-5.2,1.6-6,4.8c1.2-1.6,2.6-2.2,4.2-1.8c0.913,0.228,1.565,0.89,2.288,1.624 c1.177,1.194,2.538,2.576,5.512,2.576c3.2,0,5.2-1.6,6-4.8c-1.2,1.6-2.6,2.2-4.2,1.8c-0.913-0.228-1.565-0.89-2.288-1.624 C10.337,13.382,8.976,12,6.001,12z"/></svg>
+                    <h4 class="font-bold text-lg">Tailwind v4</h4>
+                    <p class="text-xs text-slate-400 mt-2">Design system dengan custom token.</p>
+                </div>
+                <!-- Stack 3 -->
+                <div class="glass-dark p-6 rounded-2xl text-center hover:-translate-y-2 transition-transform reveal delay-200 border border-white/10">
+                    <i class="fa-brands fa-node-js text-5xl text-[#339933] mb-4"></i>
+                    <h4 class="font-bold text-lg">Express 5</h4>
+                    <p class="text-xs text-slate-400 mt-2">Backend REST API + JWT Auth.</p>
+                </div>
+                <!-- Stack 4 -->
+                <div class="glass-dark p-6 rounded-2xl text-center hover:-translate-y-2 transition-transform reveal delay-300 border border-syn-orange/30 shadow-[0_0_15px_rgba(242,153,74,0.1)]">
+                    <i class="fa-solid fa-database text-5xl text-syn-orange mb-4"></i>
+                    <h4 class="font-bold text-lg text-syn-orange">SQLite</h4>
+                    <p class="text-xs text-slate-300 mt-2">Auto-create database lokal. Tanpa ribet setting.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Developer Flex (Terminal Simulation) -->
+    <section class="py-24 px-6 relative">
+        <div class="max-w-4xl mx-auto reveal">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="w-full md:w-1/2">
+                    <h3 class="text-3xl font-heading font-bold mb-4">One Command Rule Them All.</h3>
+                    <p class="text-slate-600 mb-6">
+                        Lupakan setup database yang panjang. Cukup <code class="bg-slate-200 px-2 py-1 rounded text-sm text-syn-teal font-mono">npm run dev</code>, dan semuanya jalan bareng: Frontend Vite, Backend Express, dan auto-generasi schema SQLite.
+                    </p>
+                    <a href="https://github.com/nblauliadka" target="_blank" class="text-syn-teal font-bold hover:text-syn-orange transition-colors flex items-center gap-2">
+                        Clone repo sekarang <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <!-- Terminal UI -->
+                <div class="w-full md:w-1/2 rounded-xl bg-[#1e1e1e] shadow-2xl overflow-hidden border border-slate-700">
+                    <!-- Mac Header -->
+                    <div class="bg-[#2d2d2d] px-4 py-3 flex items-center gap-2 border-b border-slate-700">
+                        <div class="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
+                        <div class="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
+                        <div class="w-3 h-3 rounded-full bg-[#27c93f]"></div>
+                        <span class="ml-4 text-xs text-slate-400 font-mono">bash - synalum-dev</span>
+                    </div>
+                    <!-- Terminal Body -->
+                    <div class="p-6 font-mono text-sm leading-relaxed" id="terminal-body">
+                        <div class="text-green-400 mb-2">➜  <span class="text-cyan-400">synalum-pkm-main</span> <span id="typewriter" class="text-white"></span><span class="animate-blink bg-white w-2 h-4 inline-block align-middle ml-1"></span></div>
+                        <div id="term-output" class="hidden text-slate-300 space-y-1">
+                            <p class="text-slate-400">> concurrently "npm run dev:api" "npm run dev:client"</p>
+                            <p class="text-blue-400">[api] [nodemon] starting `node server.js`</p>
+                            <p class="text-yellow-400">[client] VITE v8.0.0 ready in 350 ms</p>
+                            <p class="text-green-400">[api] 📦 SQLite 'synalum.db' verified.</p>
+                            <p class="text-green-400">[api] 🚀 Server running on http://localhost:5000</p>
+                            <p class="text-cyan-400">[client] ➜  Local:   http://localhost:5173/</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Footer -->
+    <footer id="dev" class="bg-white border-t border-slate-200 py-12 relative z-10">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            
+            <!-- Brand & Credit -->
+            <div>
+                <a href="#" class="font-heading text-2xl font-extrabold tracking-tight text-slate-800 flex items-center gap-2 mb-2">
+                    <i class="fa-solid fa-graduation-cap text-syn-teal"></i> SYNALUM
+                </a>
+                <p class="text-sm text-slate-500 font-medium">Developed by Nabil Aulia Dika & Ibnul Jawzy</p>
+            </div>
+
+            <!-- Connect Links -->
+            <div class="flex items-center gap-6">
+                <a href="https://www.linkedin.com/in/nabilauliadika" target="_blank" class="flex items-center gap-2 text-slate-500 hover:text-[#0077b5] transition-colors font-semibold">
+                    <i class="fa-brands fa-linkedin text-2xl"></i> LinkedIn
+                </a>
+                <a href="https://www.github.com/nblauliadka" target="_blank" class="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors font-semibold">
+                    <i class="fa-brands fa-github text-2xl"></i> GitHub
+                </a>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-6 mt-8 pt-8 border-t border-slate-100 text-center text-xs text-slate-400">
+            &copy; 2026 Synalum Project. All rights reserved. Code is art.
+        </div>
+    </footer>
+
+    <!-- Interactive Scripts -->
+    <script>
+        // 1. Preloader Logic (Gorden Kebuka)
+        window.addEventListener('load', () => {
+            const preloader = document.getElementById('preloader');
+            const preloaderTop = document.getElementById('preloader-top');
+            const preloaderBottom = document.getElementById('preloader-bottom');
+            const preloaderContent = document.getElementById('preloader-content');
+            
+            // Tunggu 1.5 detik biar teks loadingnya keliatan
+            setTimeout(() => {
+                // Fade out teks "SYNALUM LOADING PREVIEW"
+                preloaderContent.style.opacity = '0';
+                
+                // Setelah teks ilang dikit, tarik background atas & bawah
+                setTimeout(() => {
+                    preloaderTop.style.transform = 'translateY(-100%)';
+                    preloaderBottom.style.transform = 'translateY(100%)';
+                    
+                    // Lepas kunci scroll biar web bisa di-scroll lagi
+                    document.body.classList.remove('lock-scroll');
+                    
+                    // Hapus preloader dari DOM biar gak ganggu klik-klik
+                    setTimeout(() => {
+                        if(preloader) preloader.remove();
+                    }, 1200);
+                }, 400); // delay tarik background setelah fade-out
+            }, 1500); // durasi loading awal
+        });
+
+        // 2. Scroll Reveal Logic (Intersection Observer)
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealOptions = {
+            threshold: 0.15,
+            rootMargin: "0px 0px -50px 0px"
+        };
+        const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('active');
+                observer.unobserve(entry.target); 
+            });
+        }, revealOptions);
+        revealElements.forEach(el => revealOnScroll.observe(el));
+
+        // 3. Navbar Glass Effect on Scroll
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('py-2');
+                navbar.classList.remove('py-4');
+                navbar.firstElementChild.classList.add('shadow-md', 'border-slate-200');
+                navbar.firstElementChild.classList.remove('border-transparent');
+            } else {
+                navbar.classList.add('py-4');
+                navbar.classList.remove('py-2');
+                navbar.firstElementChild.classList.remove('shadow-md', 'border-slate-200');
+                navbar.firstElementChild.classList.add('border-transparent');
+            }
+        });
+
+        // 4. Terminal Typewriter Effect
+        const typeWriterElement = document.getElementById('typewriter');
+        const termOutput = document.getElementById('term-output');
+        const textToType = "npm run dev";
+        let index = 0;
+        let typingStarted = false;
+
+        function type() {
+            if (index < textToType.length) {
+                typeWriterElement.innerHTML += textToType.charAt(index);
+                index++;
+                setTimeout(type, 100);
+            } else {
+                setTimeout(() => {
+                    termOutput.classList.remove('hidden');
+                    termOutput.classList.add('animate-fade-in');
+                }, 500);
+            }
+        }
+
+        // Only start typing when terminal is visible
+        const terminalObserver = new IntersectionObserver((entries) => {
+            if(entries[0].isIntersecting && !typingStarted) {
+                typingStarted = true;
+                // Delay bentar nunggu gorden full kebuka dulu kalo langsung discroll
+                setTimeout(type, 600); 
+            }
+        }, { threshold: 0.5 });
+        
+        terminalObserver.observe(document.getElementById('terminal-body'));
+
+    </script>
+</body>
+</html>
