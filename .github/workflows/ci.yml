@@ -161,15 +161,22 @@ jobs:
         working-directory: synalum-client
         run: |
           set -euo pipefail
+          echo "--- webm yang ditemukan ---"
+          find test-results -name '*.webm' || true
           TOUR_WEBM=$(find test-results -name '*.webm' | head -n 1 || true)
-          if [ -n "${TOUR_WEBM}" ] && command -v ffmpeg >/dev/null 2>&1; then
-            mkdir -p e2e/media
-            ffmpeg -y -loglevel error -i "${TOUR_WEBM}" -vf "scale=1280:-2" -c:v libx264 -pix_fmt yuv420p -movflags +faststart e2e/media/demo.mp4
-            echo "demo.mp4 dibuat dari ${TOUR_WEBM}"
-            ls -la e2e/media/
-          else
-            echo "tidak ada webm atau ffmpeg tidak tersedia — media tidak dibuat"
+          if [ -z "${TOUR_WEBM}" ]; then
+            echo "GAGAL: tidak ada video webm di test-results — periksa konfigurasi video Playwright"
+            exit 1
           fi
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            echo "ffmpeg tidak ada di runner — instal via apt"
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq ffmpeg
+          fi
+          mkdir -p e2e/media
+          ffmpeg -y -loglevel error -i "${TOUR_WEBM}" -vf "scale=1280:-2" -c:v libx264 -pix_fmt yuv420p -movflags +faststart e2e/media/demo.mp4
+          echo "demo.mp4 dibuat dari ${TOUR_WEBM}"
+          ls -la e2e/media/
 
       - name: Unggah media e2e (screenshot + video demo)
         if: always()
