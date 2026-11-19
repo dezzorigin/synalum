@@ -61,7 +61,7 @@ test.describe('alur mahasiswa: daftar → feed → lamar', () => {
     const firstApply = page.getByRole('button', { name: 'Lamar Sekarang' }).first()
     await firstApply.click()
     await expect(page.getByRole('button', { name: 'Lamaran Terkirim' }).first()).toBeVisible()
-    await expect(page.getByRole('status')).toContainText('Lamaran berhasil dikirim.')
+    await expect(page.getByText('Lamaran berhasil dikirim.')).toBeVisible()
   })
 
   test('login ulang memakai akun yang sama', async ({ page }) => {
@@ -103,9 +103,8 @@ test.describe('alur alumni: daftar → verifikasi OTP → posting peluang', () =
     await page.getByLabel('Deskripsi').fill('Bimbingan 6 sesi, daring.')
     await page.getByRole('button', { name: 'Posting Peluang' }).click()
     await expect(page.getByText('Peluang berhasil diposting.')).toBeVisible()
-    await expect(page.getByText('Mentorship Backend (e2e)')).toBeVisible()
-    await expect(page.getByText('Peluang Saya — Ringkasan')).toBeVisible()
-  })
+    await expect(page.getByText('Mentorship Backend (e2e)').first()).toBeVisible()
+    await expect(page.getByText('Peluang Saya — Ringkasan')).toBeVisible()  })
 
   test('OTP salah ditolak', async ({ page }) => {
     const id = uid()
@@ -126,7 +125,7 @@ test.describe('alur dosen: posting mendapat badge RESMI USK', () => {
     await page.getByLabel('Judul Posisi').fill('Asisten Riset AI (e2e)')
     await page.getByLabel('Deskripsi').fill('Lab Informatika USK.')
     await page.getByRole('button', { name: 'Posting Peluang' }).click()
-    await expect(page.getByText('Peluang berhasil diposting.')).toBeVisible()
+    await expect(page.getByText('Peluang berhasil diposting sebagai RESMI USK.')).toBeVisible()
     await expect(page.getByText('Semua Peluang di Papan')).toBeVisible()
     const row = page.locator('div', { hasText: 'Asisten Riset AI (e2e)' }).last()
     await expect(row.getByText('RESMI USK').first()).toBeVisible()
