@@ -170,8 +170,12 @@ jobs:
           fi
           # ffmpeg bawaan Playwright (sudah diunduh langkah "Install Chromium"),
           # JANGAN apt-get: apt di runner pernah menggantung >13 menit (run
-          # 44538248900). Fallback: ffmpeg sistem bila ada.
-          FFMPEG_BIN=$(command -v ffmpeg || find "$HOME/.cache/ms-playwright" -path '*ffmpeg*' -name ffmpeg -type f 2>/dev/null | head -n 1 || true)
+          # 44538248900). Fallback: ffmpeg sistem bila ada. Catatan: nama file
+          # biner di cache Playwright adalah `ffmpeg-linux` (bukan `ffmpeg`),
+          # jadi cari dengan pola -name 'ffmpeg*'.
+          echo "--- isi cache ms-playwright ---"
+          ls "$HOME/.cache/ms-playwright" || true
+          FFMPEG_BIN=$(command -v ffmpeg || find "$HOME/.cache/ms-playwright" -type f -name 'ffmpeg*' 2>/dev/null | head -n 1 || true)
           if [ -z "${FFMPEG_BIN}" ]; then
             echo "GAGAL: ffmpeg tidak ditemukan (bukan di PATH, bukan di cache Playwright)"
             exit 1
