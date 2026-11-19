@@ -127,7 +127,13 @@ test.describe('alur dosen: posting mendapat badge RESMI USK', () => {
     await page.getByRole('button', { name: 'Posting Peluang' }).click()
     await expect(page.getByText('Peluang berhasil diposting sebagai RESMI USK.')).toBeVisible()
     await expect(page.getByText('Semua Peluang di Papan')).toBeVisible()
-    const row = page.locator('div', { hasText: 'Asisten Riset AI (e2e)' }).last()
+    // Baris papan = div terdalam yang memuat judul DAN badge (judul dan
+    // badge adalah sibling, jadi .last() pada div yang memuat keduanya
+    // adalah baris itu sendiri, bukan kartu luarnya).
+    const row = page
+      .locator('div', { hasText: 'Asisten Riset AI (e2e)' })
+      .filter({ has: page.getByText('RESMI USK') })
+      .last()
     await expect(row.getByText('RESMI USK').first()).toBeVisible()
   })
 })
