@@ -168,13 +168,17 @@ jobs:
             echo "GAGAL: tidak ada video webm di test-results — periksa konfigurasi video Playwright"
             exit 1
           fi
-          if ! command -v ffmpeg >/dev/null 2>&1; then
-            echo "ffmpeg tidak ada di runner — instal via apt"
-            sudo apt-get update -qq
-            sudo apt-get install -y -qq ffmpeg
+          # ffmpeg bawaan Playwright (sudah diunduh langkah "Install Chromium"),
+          # JANGAN apt-get: apt di runner pernah menggantung >13 menit (run
+          # 44538248900). Fallback: ffmpeg sistem bila ada.
+          FFMPEG_BIN=$(command -v ffmpeg || find "$HOME/.cache/ms-playwright" -path '*ffmpeg*' -name ffmpeg -type f 2>/dev/null | head -n 1 || true)
+          if [ -z "${FFMPEG_BIN}" ]; then
+            echo "GAGAL: ffmpeg tidak ditemukan (bukan di PATH, bukan di cache Playwright)"
+            exit 1
           fi
+          echo "ffmpeg: ${FFMPEG_BIN}"
           mkdir -p e2e/media
-          ffmpeg -y -loglevel error -i "${TOUR_WEBM}" -vf "scale=1280:-2" -c:v libx264 -pix_fmt yuv420p -movflags +faststart e2e/media/demo.mp4
+          timeout 180 "${FFMPEG_BIN}" -y -loglevel error -i "${TOUR_WEBM}" -vf "scale=1280:-2" -c:v libx264 -pix_fmt yuv420p -movflags +faststart e2e/media/demo.mp4
           echo "demo.mp4 dibuat dari ${TOUR_WEBM}"
           ls -la e2e/media/
 
