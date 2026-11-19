@@ -174,12 +174,36 @@ jobs:
           # ffmpeg bawaan Playwright adalah build minimal (tanpa muxer mp4:
           # `-movflags` ditolak "Unrecognized option", run 44542371351) dan
           # apt di runner pernah menggantung >13 menit (run 44538248900).
-          # Jadi: unduh static build ffmpeg penuh (johnvansickle) sekali jalan.
+          # Jadi: unduh static build ffmpeg penuh — dengan retry + mirror +
+          # validasi tarball, karena unduhan johnvansickle pernah terpotong
+          # dan tar gagal "Error is not recoverable" (run 44545336309).
           echo "--- unduh ffmpeg static ---"
-          curl -fsSL --max-time 300 -o /tmp/ffmpeg-static.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
           mkdir -p /tmp/ffmpeg-static
-          tar -xJf /tmp/ffmpeg-static.tar.xz -C /tmp/ffmpeg-static --strip-components=1
-          FFMPEG_BIN=/tmp/ffmpeg-static/ffmpeg
+          FFMPEG_TAR=/tmp/ffmpeg-static.tar.xz
+          ok=0
+          for url in \
+            "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz" \
+            "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz" ; do
+            for attempt in 1 2 3; do
+              rm -f "${FFMPEG_TAR}"
+              if curl -fsSL --max-time 300 -o "${FFMPEG_TAR}" "${url}"; then
+                sz=$(stat -c%s "${FFMPEG_TAR}")
+                echo "unduh ${url} -> ${sz} byte (percobaan ${attempt})"
+                if [ "${sz}" -gt 10000000 ] && tar -tJf "${FFMPEG_TAR}" >/dev/null 2>&1; then
+                  ok=1
+                  break 2
+                fi
+                echo "tarball rusak/kecil — coba lagi"
+              fi
+              sleep 5
+            done
+          done
+          if [ "${ok}" != 1 ]; then
+            echo "GAGAL: ffmpeg static tidak bisa diunduh dari kedua mirror"
+            exit 1
+          fi
+          tar -xJf "${FFMPEG_TAR}" -C /tmp/ffmpeg-static --strip-components=1
+          FFMPEG_BIN=$(find /tmp/ffmpeg-static -type f -name ffmpeg | head -n 1)
           "${FFMPEG_BIN}" -version | head -n 1
           mkdir -p e2e/media
           timeout 180 "${FFMPEG_BIN}" -y -loglevel error -i "${TOUR_WEBM}" -vf "scale=1280:-2" -c:v libx264 -pix_fmt yuv420p -movflags +faststart e2e/media/demo.mp4
