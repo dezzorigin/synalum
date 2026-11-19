@@ -162,8 +162,11 @@ jobs:
         run: |
           set -euo pipefail
           echo "--- webm yang ditemukan ---"
-          find test-results -name '*.webm' || true
-          TOUR_WEBM=$(find test-results -name '*.webm' | head -n 1 || true)
+          find test-results -name '*.webm' -exec ls -la {} \; || true
+          # Pilih webm TERBESAR: tur mobile di-skip tapi Playwright tetap
+          # menyimpan webm stub ~1 detik — `head -n 1` pernah mengambil stub
+          # itu dan demo.mp4 jadi klip 2 frame (run 44543185980).
+          TOUR_WEBM=$(find test-results -name '*.webm' -exec ls -la {} \; | sort -k5 -n -r | head -n 1 | awk '{print $NF}' || true)
           if [ -z "${TOUR_WEBM}" ]; then
             echo "GAGAL: tidak ada video webm di test-results — periksa konfigurasi video Playwright"
             exit 1
