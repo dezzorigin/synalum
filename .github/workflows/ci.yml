@@ -168,19 +168,16 @@ jobs:
             echo "GAGAL: tidak ada video webm di test-results — periksa konfigurasi video Playwright"
             exit 1
           fi
-          # ffmpeg bawaan Playwright (sudah diunduh langkah "Install Chromium"),
-          # JANGAN apt-get: apt di runner pernah menggantung >13 menit (run
-          # 44538248900). Fallback: ffmpeg sistem bila ada. Catatan: nama file
-          # biner di cache Playwright adalah `ffmpeg-linux` (bukan `ffmpeg`),
-          # jadi cari dengan pola -name 'ffmpeg*'.
-          echo "--- isi cache ms-playwright ---"
-          ls "$HOME/.cache/ms-playwright" || true
-          FFMPEG_BIN=$(command -v ffmpeg || find "$HOME/.cache/ms-playwright" -type f -name 'ffmpeg*' 2>/dev/null | head -n 1 || true)
-          if [ -z "${FFMPEG_BIN}" ]; then
-            echo "GAGAL: ffmpeg tidak ditemukan (bukan di PATH, bukan di cache Playwright)"
-            exit 1
-          fi
-          echo "ffmpeg: ${FFMPEG_BIN}"
+          # ffmpeg bawaan Playwright adalah build minimal (tanpa muxer mp4:
+          # `-movflags` ditolak "Unrecognized option", run 44542371351) dan
+          # apt di runner pernah menggantung >13 menit (run 44538248900).
+          # Jadi: unduh static build ffmpeg penuh (johnvansickle) sekali jalan.
+          echo "--- unduh ffmpeg static ---"
+          curl -fsSL --max-time 300 -o /tmp/ffmpeg-static.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+          mkdir -p /tmp/ffmpeg-static
+          tar -xJf /tmp/ffmpeg-static.tar.xz -C /tmp/ffmpeg-static --strip-components=1
+          FFMPEG_BIN=/tmp/ffmpeg-static/ffmpeg
+          "${FFMPEG_BIN}" -version | head -n 1
           mkdir -p e2e/media
           timeout 180 "${FFMPEG_BIN}" -y -loglevel error -i "${TOUR_WEBM}" -vf "scale=1280:-2" -c:v libx264 -pix_fmt yuv420p -movflags +faststart e2e/media/demo.mp4
           echo "demo.mp4 dibuat dari ${TOUR_WEBM}"
