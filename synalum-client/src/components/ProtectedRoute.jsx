@@ -10,7 +10,7 @@ export default function ProtectedRoute({ allowedRoles }) {
     // Saat masih loading session dari localStorage, jangan langsung redirect (biar tidak flicker)
     return (
       <div className="min-h-screen bg-background text-text flex items-center justify-center">
-        <div className="rounded-xl bg-white px-5 py-4 text-sm shadow-sm ring-1 ring-black/5">
+        <div className="rounded-md bg-white px-5 py-4 text-sm shadow-sm ring-1 ring-black/5">
           Memeriksa sesi login...
         </div>
       </div>

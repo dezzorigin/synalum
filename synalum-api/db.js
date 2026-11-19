@@ -3,7 +3,9 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const DB_PATH = path.join(__dirname, 'synalum.db')
+// Path DB bisa di-override env SYNALUM_DB_PATH agar tes CI memakai file
+// sementara, bukan database pengembangan (lihat test/api.test.js).
+const DB_PATH = process.env.SYNALUM_DB_PATH || path.join(__dirname, 'synalum.db')
 
 // Open (or create) the SQLite database file
 export const db = new Database(DB_PATH)

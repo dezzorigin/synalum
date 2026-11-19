@@ -1,0 +1,267 @@
+name: CI
+
+# CI untuk synalum (repo P1 #56 — full-stack JS: Express + SQLite API,
+# React + Vite client, showcase statis). Variasi sesuai stack: tes API
+# end-to-end (node:test, server asli + SQLite sementara), build + lint
+# client mode demo, Playwright e2e desktop + Pixel 7 (video tur + screenshot
+# README sebagai artifact), advisory-sweep OSV (3 lockfile), gate P0
+# anti-slop + gitleaks riwayat penuh, dan smoke dist/ (persis yang
+# di-deploy ke Pages — termasuk tag OG + og-image.png).
+# Node 24. Runner di-pin ubuntu-24.04: Playwright 1.55 tidak mendukung
+# ubuntu 26.04 (pola #53). Playwright TIDAK ada di package.json/lock:
+# job e2e meng-install dengan `npm install --no-save` (pola #53).
+# JANGAN pakai `npm audit` sebagai gate dan JANGAN pakai `| tee` tanpa
+# pipefail (menutupi exit code).
+on:
+  push:
+    branches: [main, feat/proper]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Tes API end-to-end (server asli + SQLite sementara) ────────────────
+  api-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: synalum-api/package-lock.json
+
+      - name: Install dependencies (API)
+        working-directory: synalum-api
+        run: npm ci
+
+      - name: Run API tests
+        working-directory: synalum-api
+        run: npm test
+
+  # ── Build + lint client (mode demo = yang di-deploy ke Pages) ──────────
+  client-build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: synalum-client/package-lock.json
+
+      - name: Install dependencies (client)
+        working-directory: synalum-client
+        run: npm ci
+
+      - name: Lint
+        working-directory: synalum-client
+        run: npm run lint
+
+      - name: Build (mode demo)
+        working-directory: synalum-client
+        run: npm run build
+        env:
+          VITE_DEMO_MODE: "true"
+
+      - name: Pastikan dist/ berisi hasil build + OG
+        working-directory: synalum-client
+        run: |
+          set -euo pipefail
+          test -f dist/index.html
+          test -f dist/og-image.png
+          grep -q 'og:title' dist/index.html
+          grep -q 'twitter:card' dist/index.html
+          grep -q 'synalum.pages.dev/og-image.png' dist/index.html
+
+      - name: Unggah dist/ sebagai artifact (untuk deploy Pages dari VM)
+        uses: actions/upload-artifact@v4
+        with:
+          name: pages-dist
+          path: synalum-client/dist/
+          if-no-files-found: error
+
+  # ── Pemeriksaan statis: gate P0 + gitleaks riwayat penuh ───────────────
+  static-checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Gate anti-slop P0 + kejujuran data
+        run: node scripts/check-p0.mjs
+
+      - name: Gitleaks (riwayat penuh)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── Advisory sweep OSV (3 lockfile, produksi saja) ─────────────────────
+  advisory-sweep:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: OSV sweep (produksi saja, HIGH/CRITICAL = gagal)
+        run: python3 scripts/advisory-sweep.py
+
+  # ── Playwright e2e desktop + Pixel 7 (build demo) ──────────────────────
+  playwright-e2e:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: synalum-client/package-lock.json
+
+      - name: Install dependencies (client)
+        working-directory: synalum-client
+        run: npm ci
+
+      - name: Install Playwright (hanya node_modules, tanpa lock)
+        working-directory: synalum-client
+        run: npm install --no-save @playwright/test@1.55.0
+
+      - name: Install Chromium (hanya di CI — JANGAN di VM dev)
+        working-directory: synalum-client
+        run: npx playwright install --with-deps chromium
+
+      - name: Build (mode demo)
+        working-directory: synalum-client
+        run: npm run build
+        env:
+          VITE_DEMO_MODE: "true"
+
+      - name: Jalankan e2e
+        working-directory: synalum-client
+        run: npx playwright test
+        env:
+          CI: "true"
+
+      - name: Ubah video tur (webm) menjadi mp4 untuk README
+        if: always()
+        working-directory: synalum-client
+        run: |
+          set -euo pipefail
+          echo "--- webm yang ditemukan ---"
+          find test-results -name '*.webm' -exec ls -la {} \; || true
+          # Pilih webm TERBESAR: tur mobile di-skip tapi Playwright tetap
+          # menyimpan webm stub ~1 detik — `head -n 1` pernah mengambil stub
+          # itu dan demo.mp4 jadi klip 2 frame (run 44543185980).
+          TOUR_WEBM=$(find test-results -name '*.webm' -exec ls -la {} \; | sort -k5 -n -r | head -n 1 | awk '{print $NF}' || true)
+          if [ -z "${TOUR_WEBM}" ]; then
+            echo "GAGAL: tidak ada video webm di test-results — periksa konfigurasi video Playwright"
+            exit 1
+          fi
+          # ffmpeg bawaan Playwright adalah build minimal (tanpa muxer mp4:
+          # `-movflags` ditolak "Unrecognized option", run 44542371351) dan
+          # apt di runner pernah menggantung >13 menit (run 44538248900).
+          # Jadi: unduh static build ffmpeg penuh — dengan retry + mirror +
+          # validasi tarball, karena unduhan johnvansickle pernah terpotong
+          # dan tar gagal "Error is not recoverable" (run 44545336309).
+          echo "--- unduh ffmpeg static ---"
+          mkdir -p /tmp/ffmpeg-static
+          FFMPEG_TAR=/tmp/ffmpeg-static.tar.xz
+          ok=0
+          for url in \
+            "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz" \
+            "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz" ; do
+            for attempt in 1 2 3; do
+              rm -f "${FFMPEG_TAR}"
+              if curl -fsSL --max-time 300 -o "${FFMPEG_TAR}" "${url}"; then
+                sz=$(stat -c%s "${FFMPEG_TAR}")
+                echo "unduh ${url} -> ${sz} byte (percobaan ${attempt})"
+                if [ "${sz}" -gt 10000000 ] && tar -tJf "${FFMPEG_TAR}" >/dev/null 2>&1; then
+                  ok=1
+                  break 2
+                fi
+                echo "tarball rusak/kecil — coba lagi"
+              fi
+              sleep 5
+            done
+          done
+          if [ "${ok}" != 1 ]; then
+            echo "GAGAL: ffmpeg static tidak bisa diunduh dari kedua mirror"
+            exit 1
+          fi
+          tar -xJf "${FFMPEG_TAR}" -C /tmp/ffmpeg-static --strip-components=1
+          FFMPEG_BIN=$(find /tmp/ffmpeg-static -type f -name ffmpeg | head -n 1)
+          "${FFMPEG_BIN}" -version | head -n 1
+          mkdir -p e2e/media
+          timeout 180 "${FFMPEG_BIN}" -y -loglevel error -i "${TOUR_WEBM}" -vf "scale=1280:-2" -c:v libx264 -pix_fmt yuv420p -movflags +faststart e2e/media/demo.mp4
+          echo "demo.mp4 dibuat dari ${TOUR_WEBM}"
+          ls -la e2e/media/
+
+      - name: Unggah media e2e (screenshot + video demo)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-media
+          path: |
+            synalum-client/e2e/shots/
+            synalum-client/e2e/media/
+          if-no-files-found: warn
+
+  # ── Smoke: dist/ hasil build + health API lokal ────────────────────────
+  smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: synalum-api/package-lock.json
+
+      - name: Install dependencies (API)
+        working-directory: synalum-api
+        run: npm ci
+
+      - name: Smoke API (health + register + login + feed, DB sementara)
+        working-directory: synalum-api
+        run: |
+          set -euo pipefail
+          node --input-type=module -e "
+            import { spawn } from 'node:child_process';
+            import assert from 'node:assert/strict';
+            import { mkdtemp } from 'node:fs/promises';
+            import { tmpdir } from 'node:os';
+            import { join } from 'node:path';
+            const dir = await mkdtemp(join(tmpdir(), 'synalum-smoke-'));
+            const PORT = '18799';
+            const BASE = 'http://127.0.0.1:' + PORT;
+            const server = spawn('node', ['server.js'], { cwd: '.', env: { ...process.env, PORT, JWT_SECRET: 'smoke-synalum-ci', SYNALUM_DB_PATH: join(dir, 'smoke.db') }, stdio: 'pipe' });
+            try {
+              let up = false;
+              for (let i = 0; i < 40; i++) { try { const r = await fetch(BASE + '/api/health'); if (r.ok) { up = true; break; } } catch {} await new Promise(r => setTimeout(r, 250)); }
+              assert.ok(up, 'API tidak hidup');
+              const reg = await fetch(BASE + '/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'smoke@usk.ac.id', password: 'rahasia1', role: 'mahasiswa' }) });
+              assert.equal(reg.status, 201);
+              const login = await fetch(BASE + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'smoke@usk.ac.id', password: 'rahasia1' }) });
+              assert.equal(login.status, 200);
+              const { token } = await login.json();
+              const feed = await fetch(BASE + '/api/opportunities/all', { headers: { Authorization: 'Bearer ' + token } });
+              assert.equal(feed.status, 200);
+              console.log('smoke: health + register + login + feed OK');
+            } finally { server.kill(); }
+          "

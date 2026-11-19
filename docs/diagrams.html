@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagram — Synalum</title>
+<style>
+  body { font-family: Georgia, serif; background: #f6f4ee; color: #1f2a28; margin: 0; padding: 32px; }
+  main { max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 28px; }
+  h2 { font-size: 20px; margin-top: 40px; border-top: 3px solid #1f2a28; padding-top: 12px; }
+  p { font-family: system-ui, sans-serif; font-size: 14px; line-height: 1.6; max-width: 70ch; }
+  figure { background: #fffdf8; border: 1px solid #ddd6c4; border-radius: 10px; padding: 16px; margin: 16px 0; overflow-x: auto; }
+  svg text { font-family: system-ui, sans-serif; }
+  .box { fill: #fffdf8; stroke: #0b5e66; stroke-width: 2; }
+  .box-amber { fill: #fdf3d7; stroke: #e8a33d; stroke-width: 2; }
+  .box-red { fill: #fdf0ec; stroke: #b3402e; stroke-width: 2; }
+  .lbl { font-size: 13px; font-weight: 600; fill: #1f2a28; }
+  .sub { font-size: 11px; fill: #5c665f; }
+  .arrow { stroke: #1f2a28; stroke-width: 1.6; fill: none; marker-end: url(#ah); }
+</style>
+</head>
+<body>
+<main>
+<h1>Diagram — Synalum</h1>
+<p>Diagram editorial (HTML + SVG, bukan Mermaid). Palet mengikuti <code>docs/DESIGN.md</code>:
+Kertas, Tinta, Teal USK, Kunyit, Merah Cap.</p>
+
+<h2>1. Arsitektur</h2>
+<figure>
+<svg width="880" height="300" viewBox="0 0 880 300" role="img" aria-label="Diagram arsitektur Synalum">
+  <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#1f2a28"/></marker></defs>
+  <rect class="box" x="20" y="40" width="220" height="90" rx="10"/>
+  <text class="lbl" x="36" y="72">synalum-client</text>
+  <text class="sub" x="36" y="94">React 19 + Vite 8 · :5173</text>
+  <text class="sub" x="36" y="112">Landing · Register · Verifikasi</text>
+  <rect class="box-amber" x="20" y="160" width="220" height="70" rx="10"/>
+  <text class="lbl" x="36" y="190">demoApi.js (mode demo)</text>
+  <text class="sub" x="36" y="212">Mock API di browser · localStorage</text>
+  <rect class="box" x="330" y="40" width="220" height="90" rx="10"/>
+  <text class="lbl" x="346" y="72">synalum-api</text>
+  <text class="sub" x="346" y="94">Express 5 · :5000</text>
+  <text class="sub" x="346" y="112">routes → controllers → db.js</text>
+  <rect class="box" x="330" y="160" width="220" height="70" rx="10"/>
+  <text class="lbl" x="346" y="190">SQLite — synalum.db</text>
+  <text class="sub" x="346" y="212">better-sqlite3 · WAL · 6 tabel</text>
+  <rect class="box-red" x="640" y="40" width="220" height="90" rx="10"/>
+  <text class="lbl" x="656" y="72">Cloudflare Pages</text>
+  <text class="sub" x="656" y="94">synalum.pages.dev</text>
+  <text class="sub" x="656" y="112">Hanya client mode demo</text>
+  <rect class="box-red" x="640" y="160" width="220" height="70" rx="10"/>
+  <text class="lbl" x="656" y="190">API hosted — BELUM ADA</text>
+  <text class="sub" x="656" y="212">Menunggu keputusan Nabil</text>
+  <path class="arrow" d="M240 85 H320"/>
+  <path class="arrow" d="M240 195 H320"/>
+  <path class="arrow" d="M440 130 V150"/>
+  <path class="arrow" d="M240 60 C 420 20, 520 40, 630 70"/>
+</svg>
+</figure>
+<p>Client → API lewat proxy Vite di dev (<code>/api → :5000</code>). Di Pages,
+client memakai mock demo; API asli hanya jalan lokal sampai keputusan
+deploy backend keluar.</p>
+
+<h2>2. Alur auth &amp; verifikasi alumni</h2>
+<figure>
+<svg width="880" height="210" viewBox="0 0 880 210" role="img" aria-label="Alur auth dan verifikasi alumni">
+  <defs><marker id="ah2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#1f2a28"/></marker></defs>
+  <rect class="box" x="10" y="60" width="150" height="80" rx="10"/>
+  <text class="lbl" x="24" y="92">1 · Register</text>
+  <text class="sub" x="24" y="112">email + password</text>
+  <text class="sub" x="24" y="128">bcrypt · role</text>
+  <rect class="box" x="190" y="60" width="150" height="80" rx="10"/>
+  <text class="lbl" x="204" y="92">2 · Login</text>
+  <text class="sub" x="204" y="112">JWT 7 hari</text>
+  <text class="sub" x="204" y="128">sub · role · email</text>
+  <rect class="box-amber" x="370" y="60" width="150" height="80" rx="10"/>
+  <text class="lbl" x="384" y="92">3 · OTP (lapis 1)</text>
+  <text class="sub" x="384" y="112">confirm-otp server</text>
+  <text class="sub" x="384" y="128">bukan di frontend</text>
+  <rect class="box-amber" x="550" y="60" width="150" height="80" rx="10"/>
+  <text class="lbl" x="564" y="92">4 · Dokumen (lapis 2)</text>
+  <text class="sub" x="564" y="112">LinkedIn / ijazah URL</text>
+  <text class="sub" x="564" y="128">pending_moderator</text>
+  <rect class="box" x="730" y="60" width="140" height="80" rx="10"/>
+  <text class="lbl" x="744" y="92">5 · Dashboard</text>
+  <text class="sub" x="744" y="112">alumni terbuka</text>
+  <text class="sub" x="744" y="128">gate localStorage*</text>
+  <path class="arrow" d="M160 100 H180"/><path class="arrow" d="M340 100 H360"/>
+  <path class="arrow" d="M520 100 H540"/><path class="arrow" d="M700 100 H720"/>
+</svg>
+</figure>
+<p>* Gate dashboard alumni masih localStorage (lihat PRD §5) — otorisasi
+endpoint tetap di server (JWT + peran).</p>
+
+<h2>3. Alur lamaran</h2>
+<figure>
+<svg width="880" height="210" viewBox="0 0 880 210" role="img" aria-label="Alur lamaran">
+  <defs><marker id="ah3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#1f2a28"/></marker></defs>
+  <rect class="box" x="10" y="60" width="160" height="80" rx="10"/>
+  <text class="lbl" x="24" y="92">Alumni / Dosen</text>
+  <text class="sub" x="24" y="112">posting peluang</text>
+  <text class="sub" x="24" y="128">badge dari peran</text>
+  <rect class="box" x="200" y="60" width="160" height="80" rx="10"/>
+  <text class="lbl" x="214" y="92">Feed peluang</text>
+  <text class="sub" x="214" y="112">GET /opportunities/all</text>
+  <text class="sub" x="214" y="128">hanya yang aktif</text>
+  <rect class="box-amber" x="390" y="60" width="160" height="80" rx="10"/>
+  <text class="lbl" x="404" y="92">Mahasiswa melamar</text>
+  <text class="sub" x="404" y="112">1x per peluang</text>
+  <text class="sub" x="404" y="128">duplikat → 409</text>
+  <rect class="box" x="580" y="60" width="160" height="80" rx="10"/>
+  <text class="lbl" x="594" y="92">Pemilik mereview</text>
+  <text class="sub" x="594" y="112">lihat pelamar (miliknya)</text>
+  <text class="sub" x="594" y="128">terima / tolak</text>
+  <rect class="box-red" x="770" y="60" width="100" height="80" rx="10"/>
+  <text class="lbl" x="784" y="92">Status</text>
+  <text class="sub" x="784" y="112">accepted /</text>
+  <text class="sub" x="784" y="128">rejected</text>
+  <path class="arrow" d="M170 100 H190"/><path class="arrow" d="M360 100 H380"/>
+  <path class="arrow" d="M550 100 H570"/><path class="arrow" d="M740 100 H760"/>
+</svg>
+</figure>
+<p>Kepemilikan ditegakkan di controller: pelamar dan perubahan status
+hanya untuk pembuat peluang (<code>created_by_user_id</code>).</p>
+</main>
+</body>
+</html>

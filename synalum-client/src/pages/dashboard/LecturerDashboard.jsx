@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react' // useCallback agar dep
 import { useNavigate } from 'react-router-dom' // Untuk redirect setelah logout
 import { useAuth } from '../../context/useAuth.js' // Ambil data user & logout dari context
 import { api } from '../../utils/api.js'
+import DemoBanner from '../../components/DemoBanner.jsx'
 
 export default function LecturerDashboard() {
   const { user, logout } = useAuth()
@@ -15,6 +16,8 @@ export default function LecturerDashboard() {
   const [isLoadingReview, setIsLoadingReview] = useState(true) // Loading state saat fetch peluang untuk review
   const [reviewError, setReviewError] = useState('') // Error saat fetch review/applicants
   const [updatingApplicationId, setUpdatingApplicationId] = useState(null) // Menandai lamaran yang sedang diupdate statusnya
+  const [allOpportunities, setAllOpportunities] = useState([]) // Feed semua peluang (nyata dari API) untuk seksi bawah
+  const [isLoadingFeed, setIsLoadingFeed] = useState(true) // Loading state feed
 
   const loadMyOpportunities = useCallback(async () => {
     // Ambil semua peluang dari backend, lalu filter yang dibuat oleh user login (dosen)
@@ -28,6 +31,8 @@ export default function LecturerDashboard() {
       const myId = Number(user?.id)
       const filtered = all.filter((o) => Number(o.created_by_user_id) === myId)
       setMyOpportunities(filtered)
+      setAllOpportunities(all) // Feed bawah memakai data yang sama — nyata, bukan dummy
+      setIsLoadingFeed(false)
     } catch (error) {
       const msg =
         error?.response?.data?.message ||
@@ -35,6 +40,7 @@ export default function LecturerDashboard() {
       setReviewError(msg)
     } finally {
       setIsLoadingReview(false)
+      setIsLoadingFeed(false)
     }
   }, [user?.id])
 
@@ -128,6 +134,7 @@ export default function LecturerDashboard() {
 
   return (
     <main className="min-h-screen bg-background text-text">
+      <DemoBanner />
       <div className="mx-auto max-w-6xl px-4 py-10 md:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -142,13 +149,13 @@ export default function LecturerDashboard() {
           <button
             type="button"
             onClick={handleLogout}
-            className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm ring-1 ring-black/5 transition hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+            className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm ring-1 ring-black/5 transition hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
           >
             Logout
           </button>
         </div>
 
-        <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+        <div className="mt-8 rounded-[10px] bg-white p-6 shadow-sm ring-1 ring-black/5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <div className="text-lg font-semibold text-primary">
@@ -165,33 +172,35 @@ export default function LecturerDashboard() {
 
           <form className="mt-5 space-y-4" onSubmit={handleCreateOpportunity}>
             {message ? (
-              <div className="rounded-xl bg-black/5 px-4 py-3 text-sm text-black/70">
+              <div className="rounded-md bg-black/5 px-4 py-3 text-sm text-black/70">
                 {message}
               </div>
             ) : null}
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-black/70">
+              <label htmlFor="opp-title" className="mb-1 block text-sm font-medium text-black/70">
                 Judul Posisi
               </label>
               <input
+                id="opp-title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)} // Simpan input ke state
                 placeholder="Contoh: Asisten Riset - Lab USK"
-                className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full rounded-md border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-black/70">
+              <label htmlFor="opp-description" className="mb-1 block text-sm font-medium text-black/70">
                 Deskripsi
               </label>
               <textarea
+                id="opp-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)} // Simpan input ke state
                 placeholder="Tulis ringkas kebutuhan/benefit/durasi..."
                 rows={4}
-                className="w-full resize-none rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full resize-none rounded-md border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
@@ -199,7 +208,7 @@ export default function LecturerDashboard() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:opacity-60"
+                className="rounded-md bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:opacity-60"
               >
                 {isSubmitting ? 'Memposting...' : 'Posting Peluang'}
               </button>
@@ -207,7 +216,7 @@ export default function LecturerDashboard() {
           </form>
         </div>
 
-        <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+        <div className="mt-8 rounded-[10px] bg-white p-6 shadow-sm ring-1 ring-black/5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="text-lg font-semibold text-primary">
               Review Pelamar (Peluang Saya)
@@ -218,19 +227,19 @@ export default function LecturerDashboard() {
           </div>
 
           {reviewError ? (
-            <div className="mt-4 rounded-xl bg-accent/10 px-4 py-3 text-sm text-black/70 ring-1 ring-accent/30">
+            <div className="mt-4 rounded-md bg-accent/10 px-4 py-3 text-sm text-black/70 ring-1 ring-accent/30">
               {reviewError}
             </div>
           ) : null}
 
           {isLoadingReview ? (
-            <div className="mt-4 rounded-xl bg-black/5 px-4 py-3 text-sm text-black/60">
+            <div className="mt-4 rounded-md bg-black/5 px-4 py-3 text-sm text-black/60">
               Memuat peluang...
             </div>
           ) : null}
 
           {!isLoadingReview && myOpportunities.length === 0 ? (
-            <div className="mt-4 rounded-xl bg-black/5 px-4 py-3 text-sm text-black/60">
+            <div className="mt-4 rounded-md bg-black/5 px-4 py-3 text-sm text-black/60">
               Anda belum memposting peluang.
             </div>
           ) : null}
@@ -239,7 +248,7 @@ export default function LecturerDashboard() {
             {myOpportunities.map((opp) => {
               const applicants = applicantsByOpportunity[opp.id] || null
               return (
-                <div key={opp.id} className="rounded-2xl border border-black/10 p-4">
+                <div key={opp.id} className="rounded-[10px] border border-black/10 p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="text-base font-semibold text-black/80">
@@ -252,7 +261,7 @@ export default function LecturerDashboard() {
                     <button
                       type="button"
                       onClick={() => loadApplicants(opp.id)} // Klik untuk fetch pelamar peluang ini
-                      className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm ring-1 ring-black/5 transition hover:opacity-95"
+                      className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm ring-1 ring-black/5 transition hover:opacity-95"
                     >
                       Lihat Pelamar
                     </button>
@@ -261,14 +270,14 @@ export default function LecturerDashboard() {
                   {Array.isArray(applicants) ? (
                     <div className="mt-4 space-y-3">
                       {applicants.length === 0 ? (
-                        <div className="rounded-xl bg-black/5 px-4 py-3 text-sm text-black/60">
+                        <div className="rounded-md bg-black/5 px-4 py-3 text-sm text-black/60">
                           Belum ada pelamar.
                         </div>
                       ) : (
                         applicants.map((a) => (
                           <div
                             key={a.id}
-                            className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-black/10 px-4 py-3"
+                            className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-black/10 px-4 py-3"
                           >
                             <div>
                               <div className="text-sm font-semibold text-black/80">
@@ -284,7 +293,7 @@ export default function LecturerDashboard() {
                                 type="button"
                                 onClick={() => updateStatus(a.id, 'accepted', opp.id)} // Terima lamaran
                                 disabled={updatingApplicationId === a.id}
-                                className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+                                className="rounded-md bg-primary px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
                               >
                                 Terima
                               </button>
@@ -292,7 +301,7 @@ export default function LecturerDashboard() {
                                 type="button"
                                 onClick={() => updateStatus(a.id, 'rejected', opp.id)} // Tolak lamaran
                                 disabled={updatingApplicationId === a.id}
-                                className="rounded-xl bg-accent px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+                                className="rounded-md bg-accent px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
                               >
                                 Tolak
                               </button>
@@ -308,38 +317,70 @@ export default function LecturerDashboard() {
           </div>
         </div>
 
-        <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+        {/* Feed semua peluang — data NYATA dari API, menggantikan daftar
+            hardcode "Asisten Riset AI / Magang Kampus Merdeka" berlabel
+            "Dummy Data" (audit 19 Nov 2026). */}
+        <div className="mt-8 rounded-[10px] bg-white p-6 shadow-sm ring-1 ring-black/5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="text-lg font-semibold text-primary">
-              Info Magang / Riset
+              Semua Peluang di Papan
             </div>
             <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              Dummy Data
+              Live API
             </span>
           </div>
 
           <div className="mt-4 space-y-3">
-            {[
-              { title: 'Asisten Riset AI - Lab USK', badge: 'RESMI USK' },
-              { title: 'Magang Kampus Merdeka - Partner', badge: 'EKSTERNAL' },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/10 px-4 py-3"
-              >
-                <div className="font-medium text-black/80">{item.title}</div>
-                <span
-                  className={[
-                    'rounded-full px-3 py-1 text-xs font-semibold',
-                    item.badge === 'RESMI USK'
-                      ? 'bg-accent text-white'
-                      : 'bg-black/5 text-black/60',
-                  ].join(' ')}
-                >
-                  {item.badge}
-                </span>
+            {isLoadingFeed ? (
+              <div className="rounded-md bg-black/5 px-4 py-3 text-sm text-black/60">
+                Memuat peluang...
               </div>
-            ))}
+            ) : null}
+            {!isLoadingFeed && allOpportunities.length === 0 ? (
+              <div className="rounded-md bg-black/5 px-4 py-3 text-sm text-black/60">
+                Belum ada peluang yang tersedia.
+              </div>
+            ) : null}
+            {!isLoadingFeed &&
+              allOpportunities.map((item, i) => (
+                <div
+                  key={item.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-black/10 px-4 py-3"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="ledger-num text-sm font-bold" style={{ color: '#e8a33d' }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <div>
+                      <div className="font-medium text-black/80">
+                        {item.title}
+                        {item.demo_seed ? (
+                          <span className="ml-2 rounded-md px-2 py-0.5 text-xs font-bold" style={{ background: '#fdf3d7', color: '#5c3d05' }}>
+                            Contoh
+                          </span>
+                        ) : null}
+                      </div>
+                      {item.description ? (
+                        <div className="mt-0.5 text-sm text-black/60">{item.description}</div>
+                      ) : null}
+                    </div>
+                  </div>
+                  <span
+                    className={[
+                      'rounded-full px-3 py-1 text-xs font-semibold',
+                      item.badge_source === 'RESMI_USK'
+                        ? 'bg-accent text-white'
+                        : 'bg-black/5 text-black/60',
+                    ].join(' ')}
+                  >
+                    {item.badge_source === 'RESMI_USK'
+                      ? 'RESMI USK'
+                      : item.badge_source === 'ALUMNI_POST'
+                        ? 'ALUMNI'
+                        : 'EKSTERNAL'}
+                  </span>
+                </div>
+              ))}
           </div>
         </div>
       </div>

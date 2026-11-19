@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react' // useCallback agar dep
 import { useNavigate } from 'react-router-dom' // Untuk redirect setelah logout
 import { useAuth } from '../../context/useAuth.js' // Ambil data user & logout dari context
 import { api } from '../../utils/api.js'
+import DemoBanner from '../../components/DemoBanner.jsx'
 
 export default function AlumniDashboard() {
   const { user, logout } = useAuth()
@@ -130,6 +131,7 @@ export default function AlumniDashboard() {
 
   return (
     <main className="min-h-screen bg-background text-text">
+      <DemoBanner />
       <div className="mx-auto max-w-6xl px-4 py-10 md:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -144,13 +146,13 @@ export default function AlumniDashboard() {
           <button
             type="button"
             onClick={handleLogout}
-            className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm ring-1 ring-black/5 transition hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+            className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm ring-1 ring-black/5 transition hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
           >
             Logout
           </button>
         </div>
 
-        <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+        <div className="mt-8 rounded-[10px] bg-white p-6 shadow-sm ring-1 ring-black/5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <div className="text-lg font-semibold text-primary">
@@ -167,33 +169,35 @@ export default function AlumniDashboard() {
 
           <form className="mt-5 space-y-4" onSubmit={handleCreateOpportunity}>
             {message ? (
-              <div className="rounded-xl bg-black/5 px-4 py-3 text-sm text-black/70">
+              <div className="rounded-md bg-black/5 px-4 py-3 text-sm text-black/70">
                 {message}
               </div>
             ) : null}
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-black/70">
+              <label htmlFor="opp-title" className="mb-1 block text-sm font-medium text-black/70">
                 Judul Posisi
               </label>
               <input
+                id="opp-title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)} // Simpan input ke state
                 placeholder="Contoh: Mentorship Backend"
-                className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full rounded-md border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-black/70">
+              <label htmlFor="opp-description" className="mb-1 block text-sm font-medium text-black/70">
                 Deskripsi
               </label>
               <textarea
+                id="opp-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)} // Simpan input ke state
                 placeholder="Tulis ringkas kebutuhan/benefit/durasi..."
                 rows={4}
-                className="w-full resize-none rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full resize-none rounded-md border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
@@ -201,7 +205,7 @@ export default function AlumniDashboard() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:opacity-60"
+                className="rounded-md bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:opacity-60"
               >
                 {isSubmitting ? 'Memposting...' : 'Posting Peluang'}
               </button>
@@ -209,7 +213,7 @@ export default function AlumniDashboard() {
           </form>
         </div>
 
-        <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+        <div className="mt-8 rounded-[10px] bg-white p-6 shadow-sm ring-1 ring-black/5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="text-lg font-semibold text-primary">
               Review Pelamar (Peluang Saya)
@@ -220,19 +224,19 @@ export default function AlumniDashboard() {
           </div>
 
           {reviewError ? (
-            <div className="mt-4 rounded-xl bg-accent/10 px-4 py-3 text-sm text-black/70 ring-1 ring-accent/30">
+            <div className="mt-4 rounded-md bg-accent/10 px-4 py-3 text-sm text-black/70 ring-1 ring-accent/30">
               {reviewError}
             </div>
           ) : null}
 
           {isLoadingReview ? (
-            <div className="mt-4 rounded-xl bg-black/5 px-4 py-3 text-sm text-black/60">
+            <div className="mt-4 rounded-md bg-black/5 px-4 py-3 text-sm text-black/60">
               Memuat peluang...
             </div>
           ) : null}
 
           {!isLoadingReview && myOpportunities.length === 0 ? (
-            <div className="mt-4 rounded-xl bg-black/5 px-4 py-3 text-sm text-black/60">
+            <div className="mt-4 rounded-md bg-black/5 px-4 py-3 text-sm text-black/60">
               Anda belum memposting peluang.
             </div>
           ) : null}
@@ -241,7 +245,7 @@ export default function AlumniDashboard() {
             {myOpportunities.map((opp) => {
               const applicants = applicantsByOpportunity[opp.id] || null
               return (
-                <div key={opp.id} className="rounded-2xl border border-black/10 p-4">
+                <div key={opp.id} className="rounded-[10px] border border-black/10 p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="text-base font-semibold text-black/80">
@@ -254,7 +258,7 @@ export default function AlumniDashboard() {
                     <button
                       type="button"
                       onClick={() => loadApplicants(opp.id)} // Klik untuk fetch pelamar peluang ini
-                      className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm ring-1 ring-black/5 transition hover:opacity-95"
+                      className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm ring-1 ring-black/5 transition hover:opacity-95"
                     >
                       Lihat Pelamar
                     </button>
@@ -263,14 +267,14 @@ export default function AlumniDashboard() {
                   {Array.isArray(applicants) ? (
                     <div className="mt-4 space-y-3">
                       {applicants.length === 0 ? (
-                        <div className="rounded-xl bg-black/5 px-4 py-3 text-sm text-black/60">
+                        <div className="rounded-md bg-black/5 px-4 py-3 text-sm text-black/60">
                           Belum ada pelamar.
                         </div>
                       ) : (
                         applicants.map((a) => (
                           <div
                             key={a.id}
-                            className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-black/10 px-4 py-3"
+                            className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-black/10 px-4 py-3"
                           >
                             <div>
                               <div className="text-sm font-semibold text-black/80">
@@ -286,7 +290,7 @@ export default function AlumniDashboard() {
                                 type="button"
                                 onClick={() => updateStatus(a.id, 'accepted', opp.id)} // Terima lamaran
                                 disabled={updatingApplicationId === a.id}
-                                className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+                                className="rounded-md bg-primary px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
                               >
                                 Terima
                               </button>
@@ -294,7 +298,7 @@ export default function AlumniDashboard() {
                                 type="button"
                                 onClick={() => updateStatus(a.id, 'rejected', opp.id)} // Tolak lamaran
                                 disabled={updatingApplicationId === a.id}
-                                className="rounded-xl bg-accent px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+                                className="rounded-md bg-accent px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
                               >
                                 Tolak
                               </button>
@@ -310,47 +314,43 @@ export default function AlumniDashboard() {
           </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-            <div className="text-lg font-semibold text-primary">
-              Peluang Aktif
-            </div>
-            <div className="mt-4 space-y-3">
-              {[
-                { title: 'Mentorship Backend', status: 'Aktif' },
-                { title: 'Internship Fullstack', status: 'Aktif' },
-              ].map((item) => (
-                <div
-                  key={item.title}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-black/10 px-4 py-3"
-                >
-                  <div className="font-medium text-black/80">{item.title}</div>
-                  <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                    {item.status}
-                  </span>
-                </div>
-              ))}
-            </div>
+        {/* Ringkasan peluang SAYA — data nyata dari API, menggantikan daftar
+            hardcode "Mentorship Backend / Internship Fullstack" dan
+            "Mahasiswa A/B" (data palsu, audit 19 Nov 2026). */}
+        <div className="mt-8 rounded-[10px] bg-white p-6 shadow-sm ring-1 ring-black/5">
+          <div className="text-lg font-semibold text-primary">
+            Peluang Saya — Ringkasan
           </div>
-
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-            <div className="text-lg font-semibold text-primary">Mentee Dibimbing</div>
-            <div className="mt-4 space-y-3">
-              {[
-                { name: 'Mahasiswa A', progress: 'Sesi 2/6' },
-                { name: 'Mahasiswa B', progress: 'Sesi 1/4' },
-              ].map((item) => (
+          <p className="mt-1 text-sm text-black/60">
+            {myOpportunities.length === 0
+              ? 'Anda belum memposting peluang.'
+              : `${myOpportunities.length} peluang diposting oleh Anda.`}
+          </p>
+          <div className="mt-4 space-y-3">
+            {myOpportunities.map((opp, i) => {
+              const applicants = applicantsByOpportunity[opp.id]
+              return (
                 <div
-                  key={item.name}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-black/10 px-4 py-3"
+                  key={opp.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-black/10 px-4 py-3"
                 >
-                  <div className="font-medium text-black/80">{item.name}</div>
-                  <span className="rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold text-accent">
-                    {item.progress}
+                  <div className="flex items-start gap-3">
+                    <span className="ledger-num text-sm font-bold" style={{ color: '#e8a33d' }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <div>
+                      <div className="font-medium text-black/80">{opp.title}</div>
+                      <div className="ledger-num mt-0.5 text-xs text-black/50">
+                        {opp.created_at ? new Date(opp.created_at).toLocaleDateString('id-ID') : ''} · {opp.badge_source}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                    {Array.isArray(applicants) ? `${applicants.length} pelamar` : 'Aktif'}
                   </span>
                 </div>
-              ))}
-            </div>
+              )
+            })}
           </div>
         </div>
       </div>

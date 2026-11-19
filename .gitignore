@@ -1,1 +1,48 @@
+# Dependencies
 node_modules/
+
+# Build output
+dist/
+dist-ssr/
+*.local
+
+# Environment & secrets — JANGAN PERNAH commit .env berisi nilai asli
+.env
+.env.local
+.env.*.local
+
+# SQLite — database lokal dibuat otomatis saat API jalan pertama kali.
+# synalum.db-shm / synalum.db-wal sempat ter-commit sebelum audit
+# 19 Nov 2026; keduanya dihapus dari tree dan masuk daftar ini.
+synalum.db
+synalum.db-shm
+synalum.db-wal
+*.db-shm
+*.db-wal
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Playwright (hanya artifact lokal; CI mengunggah artifactnya sendiri)
+synalum-client/test-results/
+synalum-client/playwright-report/
+synalum-client/playwright/.cache/
+synalum-client/e2e/shots/
+synalum-client/e2e/media/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
