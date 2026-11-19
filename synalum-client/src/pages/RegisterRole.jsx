@@ -113,6 +113,7 @@ export default function RegisterRole() {
                 type="button"
                 role="radio"
                 aria-checked={isActive}
+                aria-label={role.title}
                 onClick={() => handleSelect(role.key)}
                 className="rounded-[10px] border bg-white p-6 text-left shadow-sm transition"
                 style={{

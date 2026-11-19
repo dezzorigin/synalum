@@ -14,7 +14,7 @@ const uid = () => `${Date.now()}-${Math.floor(Math.random() * 10000)}`
 
 async function register(page, role, email, password) {
   await page.goto('/#/register')
-  await page.getByRole('radio', { name: new RegExp(role, 'i') }).click()
+  await page.getByRole('radio', { name: role, exact: true }).click()
   await page.getByLabel('Email', { exact: true }).fill(email)
   await page.getByLabel('Password', { exact: true }).fill(password)
   await page.getByRole('button', { name: 'Daftar & Masuk' }).click()
@@ -86,7 +86,7 @@ test.describe('alur alumni: daftar → verifikasi OTP → posting peluang', () =
     await expect(page).toHaveURL(/#\/verifikasi-alumni/)
     await expect(page.getByRole('heading', { name: 'Verifikasi Alumni (2 Lapisan)' })).toBeVisible()
     // Langkah 3 yang mati sudah dihapus — hanya ada 2 langkah.
-    await expect(page.getByText('Konfirmasi Sesama Alumni')).toHaveCount(0)
+    await expect(page.getByText('Langkah 3')).toHaveCount(0)
 
     await page.getByRole('button', { name: 'Kirim OTP' }).click()
     await expect(page.getByText(/Simulasi OTP \(mode demo/)).toBeVisible()

@@ -22,7 +22,7 @@ test('tur: daftar mahasiswa → feed → lamar → login ulang', async ({ page }
   await page.waitForTimeout(800)
 
   await page.getByRole('button', { name: 'Daftar Sekarang' }).first().click()
-  await page.getByRole('radio', { name: /Mahasiswa/i }).click()
+  await page.getByRole('radio', { name: 'Mahasiswa', exact: true }).click()
   await page.getByLabel('Email', { exact: true }).fill(email)
   await page.getByLabel('Password', { exact: true }).fill('rahasia1')
   await page.getByRole('button', { name: 'Daftar & Masuk' }).click()

@@ -178,10 +178,11 @@ export default function LecturerDashboard() {
             ) : null}
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-black/70">
+              <label htmlFor="opp-title" className="mb-1 block text-sm font-medium text-black/70">
                 Judul Posisi
               </label>
               <input
+                id="opp-title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)} // Simpan input ke state
                 placeholder="Contoh: Asisten Riset - Lab USK"
@@ -190,10 +191,11 @@ export default function LecturerDashboard() {
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-black/70">
+              <label htmlFor="opp-description" className="mb-1 block text-sm font-medium text-black/70">
                 Deskripsi
               </label>
               <textarea
+                id="opp-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)} // Simpan input ke state
                 placeholder="Tulis ringkas kebutuhan/benefit/durasi..."
