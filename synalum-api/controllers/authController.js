@@ -1,14 +1,11 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { db } from '../db.js'
+import { getJwtSecret } from '../jwtSecret.js'
 
 // ─── Defaults ────────────────────────────────────────────────────────────────
-const DEFAULT_JWT_SECRET = 'synalum_local_dev_secret_change_in_prod'
-
-function getJwtSecret() {
-  const secret = process.env.JWT_SECRET
-  return secret && secret.trim() ? secret : DEFAULT_JWT_SECRET
-}
+// Secret JWT diambil dari jwtSecret.js (satu sumber kebenaran dengan
+// authMiddleware) — lihat file itu untuk penjelasan bug yang diperbaiki.
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase()

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react' // useState untuk menyimpan role terpi
 import { useNavigate } from 'react-router-dom' // Untuk pindah route (kembali ke landing)
 import { useAuth } from '../context/useAuth.js' // Ambil fungsi login agar auto-login setelah register
 import { api } from '../utils/api.js'
+import DemoBanner from '../components/DemoBanner.jsx'
 
 export default function RegisterRole() {
   const [selectedRole, setSelectedRole] = useState(null) // Nilai: 'mahasiswa' | 'alumni' | 'dosen'
@@ -78,71 +79,76 @@ export default function RegisterRole() {
   }
 
   return (
-    <main className="relative min-h-screen bg-gradient-to-br from-white via-bg to-primary/10 text-text overflow-hidden">
-      <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-28 -left-28 h-80 w-80 rounded-full bg-accent/20 blur-3xl" />
+    <main className="min-h-screen" style={{ background: '#f6f4ee', color: '#1f2a28' }}>
+      <DemoBanner />
 
-      <div className="mx-auto max-w-6xl px-4 py-14 md:px-6 md:py-20">
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+      <div className="mx-auto max-w-6xl px-4 py-10 md:px-6 md:py-14">
+        <div className="rule-thick" aria-hidden="true" />
+        <div className="mb-8 mt-6 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-primary">
+            <h1 className="text-3xl font-semibold tracking-tight" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
               Pilih Peran Anda
             </h1>
-            <p className="mt-2 text-sm text-black/60">
+            <p className="mt-2 text-sm" style={{ color: '#5c665f' }}>
               Peran menentukan dashboard, fitur, dan alur verifikasi.
             </p>
           </div>
 
           <button
             type="button"
-            onClick={() => navigate('/')} // Kembali ke Landing Page (S1)
-            className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm ring-1 ring-black/5 transition hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+            onClick={() => navigate('/')}
+            className="btn-ghost text-sm"
           >
-            &lt;- Kembali
+            ← Kembali
           </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {roles.map((role) => {
-            const isActive = selectedRole === role.key // True jika role ini sedang dipilih
-
+        {/* Pilih peran: 3 baris ledger, bukan 3 kartu simetris */}
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3" role="radiogroup" aria-label="Pilih peran">
+          {roles.map((role, i) => {
+            const isActive = selectedRole === role.key
             return (
               <button
                 key={role.key}
                 type="button"
-                onClick={() => handleSelect(role.key)} // Klik kartu = pilih role
-                className={[
-                  'group rounded-2xl bg-white/80 p-6 text-left shadow-sm ring-1 ring-black/5 transition backdrop-blur',
-                  'hover:-translate-y-0.5 hover:shadow-md',
-                  isActive ? 'ring-2 ring-accent' : '',
-                ].join(' ')} // Gabungkan class Tailwind secara aman
+                role="radio"
+                aria-checked={isActive}
+                onClick={() => handleSelect(role.key)}
+                className="rounded-[10px] border bg-white p-6 text-left shadow-sm transition"
+                style={{
+                  borderColor: isActive ? '#0b5e66' : '#ddd6c4',
+                  background: '#fffdf8',
+                  boxShadow: isActive ? '0 0 0 2px rgba(11,94,102,0.25)' : undefined,
+                }}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-lg font-semibold text-primary">
+                    <span className="ledger-num text-xs font-bold" style={{ color: '#e8a33d' }}>
+                      0{i + 1}
+                    </span>
+                    <div className="mt-1 text-lg font-semibold" style={{ color: '#0b5e66' }}>
                       {role.title}
                     </div>
-                    <p className="mt-2 text-sm leading-relaxed text-black/60">
+                    <p className="mt-2 text-sm leading-relaxed" style={{ color: '#5c665f' }}>
                       {role.description}
                     </p>
                   </div>
-
                   <div
-                    className={[
-                      'flex h-10 w-10 items-center justify-center rounded-xl text-sm font-semibold',
-                      isActive ? 'bg-accent text-white' : 'bg-primary/10 text-primary',
-                    ].join(' ')} // Badge kecil sebagai identitas visual role
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-sm font-bold"
+                    style={{
+                      background: isActive ? '#0b5e66' : '#eef0e9',
+                      color: isActive ? '#fff' : '#0b5e66',
+                    }}
+                    aria-hidden="true"
                   >
                     {role.title.slice(0, 1)}
                   </div>
                 </div>
-
-                <div className="mt-5 flex items-center gap-2 text-sm font-medium text-black/50">
+                <div className="mt-5 flex items-center gap-2 text-sm font-medium" style={{ color: '#5c665f' }}>
                   <span
-                    className={[
-                      'h-2 w-2 rounded-full',
-                      isActive ? 'bg-accent' : 'bg-black/15',
-                    ].join(' ')} // Dot indikator status (dipilih / belum)
+                    className="h-2 w-2 rounded-full"
+                    style={{ background: isActive ? '#e8a33d' : '#c9c2ab' }}
+                    aria-hidden="true"
                   />
                   {isActive ? 'Dipilih' : 'Klik untuk memilih'}
                 </div>
@@ -151,56 +157,67 @@ export default function RegisterRole() {
           })}
         </div>
 
-        <div className="mt-8 rounded-3xl bg-white/85 p-7 shadow-lg ring-1 ring-black/5 backdrop-blur">
-          <div className="text-lg font-semibold text-primary">Buat Akun</div>
-          <p className="mt-1 text-sm text-black/60">
-            Masukkan email & password untuk menyelesaikan pendaftaran.
+        <div className="mt-8 rounded-[10px] border bg-white p-6 shadow-sm sm:p-7" style={{ borderColor: '#ddd6c4', background: '#fffdf8' }}>
+          <div className="text-lg font-semibold" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>Buat Akun</div>
+          <p className="mt-1 text-sm" style={{ color: '#5c665f' }}>
+            Masukkan email &amp; password untuk menyelesaikan pendaftaran.
           </p>
 
           <form
             onSubmit={(e) => {
-              e.preventDefault() // Cegah reload halaman
-              handleRegister() // Jalankan proses register
+              e.preventDefault()
+              handleRegister()
             }}
             className="mt-5 space-y-4"
           >
             {errorMessage ? (
-              <div className="rounded-xl bg-accent/10 px-4 py-3 text-sm text-black/70 ring-1 ring-accent/30">
+              <div role="alert" className="rounded-md border px-4 py-3 text-sm" style={{ background: '#fdf0ec', borderColor: '#b3402e', color: '#7a2418' }}>
                 {errorMessage}
               </div>
             ) : null}
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-black/70">
+              <label htmlFor="register-email" className="mb-1 block text-sm font-medium" style={{ color: '#3d4a45' }}>
                 Email
               </label>
               <input
+                id="register-email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)} // Simpan nilai email
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@usk.ac.id"
                 type="email"
-                className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                autoComplete="email"
+                required
+                className="input-base"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-black/70">
+              <label htmlFor="register-password" className="mb-1 block text-sm font-medium" style={{ color: '#3d4a45' }}>
                 Password
               </label>
               <input
+                id="register-password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)} // Simpan nilai password
-                placeholder="Minimal 8 karakter"
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Minimal 6 karakter"
                 type="password"
-                className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                autoComplete="new-password"
+                minLength={6}
+                required
+                className="input-base"
               />
+              <p className="mt-1 text-xs" style={{ color: '#5c665f' }}>
+                Minimal 6 karakter — sama dengan aturan backend (sebelumnya
+                placeholder menulis 8 karakter, padahal backend menerima 6).
+              </p>
             </div>
 
             <div className="flex justify-end">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:opacity-60"
+                className="btn-primary"
               >
                 {isSubmitting ? 'Memproses...' : 'Daftar & Masuk'}
               </button>

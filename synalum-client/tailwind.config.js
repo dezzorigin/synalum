@@ -1,18 +1,25 @@
+// Catatan: Tailwind v4 membaca token dari @theme di src/index.css —
+// file ini dipertahankan sebagai dokumentasi palet (dan dipakai tooling
+// lama). Jangan tambah warna/font di sini tanpa mengubah index.css.
 export default {
   content: [
-    './index.html', // Tailwind akan scan class yang dipakai di file HTML utama
-    './src/**/*.{js,jsx,ts,tsx}', // Tailwind akan scan semua file source React
+    './index.html',
+    './src/**/*.{js,jsx,ts,tsx}',
   ],
   theme: {
     extend: {
       colors: {
-        primary: '#0A6C75', // Warna utama brand SYNALUM
-        accent: '#F2994A', // Warna aksen untuk CTA / highlight
-        background: '#F3F4F6', // Warna background aplikasi
-        text: '#4F4F4F', // Warna teks utama
+        paper: '#F6F4EE', // Kertas — latar utama (docs/DESIGN.md)
+        ink: '#1F2A28', // Tinta — teks utama
+        primary: '#0B5E66', // Teal USK — aksi utama
+        accent: '#E8A33D', // Kunyit — penanda / badge
+        cap: '#B3402E', // Merah Cap — stempel + error
+        background: '#F6F4EE',
+        text: '#1F2A28',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'], // Set font default jadi Inter
+        sans: ['Public Sans', 'system-ui', 'sans-serif'],
+        display: ['Fraunces', 'Georgia', 'serif'],
       },
     },
   },

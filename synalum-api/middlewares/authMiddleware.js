@@ -1,10 +1,5 @@
 import jwt from 'jsonwebtoken' // Untuk memverifikasi token JWT yang dikirim oleh client
-
-function getJwtSecret() {
-  // Ambil JWT_SECRET dari env, wajib ada agar verifikasi token valid
-  const secret = process.env.JWT_SECRET
-  return secret && secret.trim() ? secret : null
-}
+import { getJwtSecret } from '../jwtSecret.js' // Secret yang sama dengan authController (lihat jwtSecret.js)
 
 export function authenticate(req, res, next) {
   // Middleware ini memastikan user punya JWT yang valid
@@ -18,11 +13,6 @@ export function authenticate(req, res, next) {
   }
 
   const secret = getJwtSecret()
-  if (!secret) {
-    return res.status(500).json({
-      message: 'JWT_SECRET belum diset di environment (.env)',
-    })
-  }
 
   try {
     const decoded = jwt.verify(token, secret) // Jika token invalid/expired, ini akan melempar error

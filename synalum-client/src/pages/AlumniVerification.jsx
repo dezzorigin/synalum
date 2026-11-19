@@ -2,11 +2,21 @@ import { useMemo, useState } from 'react' // useState untuk langkah aktif, useMe
 import { useNavigate } from 'react-router-dom' // Untuk redirect ke dashboard setelah verifikasi
 import { useAuth } from '../context/useAuth.js' // Ambil user + markAlumniVerified untuk unlock dashboard alumni
 import { api } from '../utils/api.js'
+import DemoBanner from '../components/DemoBanner.jsx'
 
+// Verifikasi alumni — 2 langkah yang benar-benar ada di backend:
+// 1) OTP email (layer 1), 2) tautan LinkedIn/ijazah (layer 2).
+// PERBAIKAN AUDIT (19 Nov 2026):
+// - OTP dulu dibandingkan di FRONTEND (bisa dilewati dengan mengubah state
+//   React). Sekarang validasi di server via POST /api/verify/confirm-otp.
+// - Langkah 3 "Konfirmasi Sesama Alumni" DIHAPUS: inputnya tidak punya state,
+//   tidak ada endpoint, dan tombol "Selesai" tidak melakukan apa pun.
+//   Layer 3 dicatat sebagai rencana di docs/PRD.md, bukan ditampilkan
+//   sebagai fitur yang jalan.
 export default function AlumniVerification() {
-  const [step, setStep] = useState(1) // Step aktif: 1..3
+  const [step, setStep] = useState(1) // Step aktif: 1..2
   const [otpInput, setOtpInput] = useState('') // OTP yang diketik user
-  const [issuedOtp, setIssuedOtp] = useState('') // OTP dari server (SIMULASI email terkirim)
+  const [issuedOtp, setIssuedOtp] = useState('') // OTP dari server (SIMULASI email terkirim, hanya mode demo)
   const [documentUrl, setDocumentUrl] = useState('') // URL LinkedIn/Ijazah yang diinput user
   const [isSubmitting, setIsSubmitting] = useState(false) // Loading state untuk request API
   const [errorMessage, setErrorMessage] = useState('') // Menyimpan error agar ditampilkan di UI
@@ -26,18 +36,9 @@ export default function AlumniVerification() {
         title: 'Unggah LinkedIn / Ijazah',
         description: 'Unggah bukti alumni atau tautan LinkedIn untuk validasi.',
       },
-      {
-        id: 3,
-        title: 'Konfirmasi Sesama Alumni',
-        description: 'Minta konfirmasi dari alumni lain sebagai verifikasi layer 3.',
-      },
     ],
     [],
   )
-
-  function next() {
-    setStep((prev) => Math.min(prev + 1, 3)) // Naik step maksimal sampai 3
-  }
 
   function back() {
     setStep((prev) => Math.max(prev - 1, 1)) // Turun step minimal sampai 1
@@ -52,8 +53,10 @@ export default function AlumniVerification() {
 
     try {
       const response = await api.post('/api/verify/request-otp')
-      const otpFromServer = String(response.data?.otp || '')
-      setIssuedOtp(otpFromServer) // Simpan OTP dari server agar bisa divalidasi di frontend (khusus simulasi MVP)
+      // Server hanya mengembalikan `otp` dalam mode demo (SYNALUM_OTP_DEMO=1
+      // atau mock demo). Di produksi field ini tidak ada — user membaca
+      // kode dari email sungguhan.
+      setIssuedOtp(String(response.data?.otp || ''))
     } catch (error) {
       const msg =
         error?.response?.data?.message ||
@@ -64,22 +67,25 @@ export default function AlumniVerification() {
     }
   }
 
-  function handleValidateOtp() {
-    // Step 1: validasi OTP (untuk MVP kita bandingkan dengan OTP response)
-    // Catatan: di produksi, validasi harus dilakukan di backend, bukan di frontend.
+  async function handleValidateOtp() {
+    // Step 1: validasi OTP DI SERVER (POST /api/verify/confirm-otp).
     setErrorMessage('')
-
-    if (!issuedOtp) {
-      setErrorMessage('Silakan klik "Kirim OTP" dulu.')
+    if (!otpInput.trim()) {
+      setErrorMessage('Masukkan kode OTP dulu.')
       return
     }
-
-    if (otpInput.trim() !== issuedOtp) {
-      setErrorMessage('OTP tidak cocok. Coba lagi.')
-      return
+    setIsSubmitting(true)
+    try {
+      await api.post('/api/verify/confirm-otp', { otp: otpInput.trim() })
+      setStep(2) // OTP cocok menurut server → lanjut ke step 2
+    } catch (error) {
+      const msg =
+        error?.response?.data?.message ||
+        'Gagal memverifikasi OTP. Pastikan Anda login sebagai alumni dan server aktif.'
+      setErrorMessage(msg)
+    } finally {
+      setIsSubmitting(false)
     }
-
-    next() // Jika OTP cocok, lanjut ke step 2
   }
 
   async function handleSubmitDocs() {
@@ -112,16 +118,19 @@ export default function AlumniVerification() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-text">
+    <main className="min-h-screen" style={{ background: '#f6f4ee', color: '#1f2a28' }}>
+      <DemoBanner />
       <div className="mx-auto max-w-4xl px-4 py-10 md:px-6">
-        <h1 className="text-3xl font-semibold tracking-tight text-primary">
-          Verifikasi Alumni (3-Layer)
+        <div className="rule-thick" aria-hidden="true" />
+        <h1 className="mt-6 text-3xl font-semibold tracking-tight" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
+          Verifikasi Alumni (2 Lapisan)
         </h1>
-        <p className="mt-2 text-sm text-black/60">
-          Verifikasi 3 langkah untuk alumni. (Layer 3 opsional)
+        <p className="mt-2 text-sm" style={{ color: '#5c665f' }}>
+          Verifikasi 2 langkah untuk alumni. Lapisan ke-3 (konfirmasi sesama
+          alumni) belum tersedia — lihat docs/PRD.md.
         </p>
 
-        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
           {steps.map((s) => {
             const isDone = s.id < step
             const isActive = s.id === step
@@ -129,49 +138,46 @@ export default function AlumniVerification() {
             return (
               <div
                 key={s.id}
-                className={[
-                  'rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5',
-                  isActive ? 'ring-2 ring-accent' : '',
-                ].join(' ')}
+                className="rounded-[10px] border bg-white p-5 shadow-sm"
+                style={{
+                  borderColor: isActive ? '#0b5e66' : '#ddd6c4',
+                  background: '#fffdf8',
+                  boxShadow: isActive ? '0 0 0 2px rgba(11,94,102,0.25)' : undefined,
+                }}
               >
                 <div className="flex items-center justify-between gap-3">
-                  <div className="text-sm font-semibold text-primary">
-                    Step {s.id}
+                  <div className="text-sm font-semibold" style={{ color: '#0b5e66' }}>
+                    Langkah {s.id}
                   </div>
                   <span
-                    className={[
-                      'rounded-full px-3 py-1 text-xs font-semibold',
-                      isDone
-                        ? 'bg-primary/10 text-primary'
-                        : isActive
-                          ? 'bg-accent text-white'
-                          : 'bg-black/5 text-black/60',
-                    ].join(' ')}
+                    className="rounded-md px-3 py-1 text-xs font-semibold"
+                    style={{
+                      background: isDone ? '#e3efe9' : isActive ? '#0b5e66' : '#eeece4',
+                      color: isDone ? '#0b5e66' : isActive ? '#fff' : '#5c665f',
+                    }}
                   >
                     {isDone ? 'Selesai' : isActive ? 'Aktif' : 'Menunggu'}
                   </span>
                 </div>
-                <div className="mt-3 text-base font-semibold text-black/80">
-                  {s.title}
-                </div>
-                <div className="mt-2 text-sm text-black/60">{s.description}</div>
+                <div className="mt-3 text-base font-semibold">{s.title}</div>
+                <div className="mt-2 text-sm" style={{ color: '#5c665f' }}>{s.description}</div>
               </div>
             )
           })}
         </div>
 
-        <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-          <div className="text-lg font-semibold text-primary">{active?.title}</div>
-          <div className="mt-2 text-sm text-black/60">{active?.description}</div>
+        <div className="mt-6 rounded-[10px] border bg-white p-6 shadow-sm" style={{ borderColor: '#ddd6c4', background: '#fffdf8' }}>
+          <div className="text-lg font-semibold" style={{ fontFamily: "'Fraunces', Georgia, serif" }}>{active?.title}</div>
+          <div className="mt-2 text-sm" style={{ color: '#5c665f' }}>{active?.description}</div>
 
           {user?.role && user.role !== 'alumni' ? (
-            <div className="mt-4 rounded-xl bg-accent/10 px-4 py-3 text-sm text-black/70 ring-1 ring-accent/30">
+            <div role="alert" className="mt-4 rounded-md border px-4 py-3 text-sm" style={{ background: '#fdf0ec', borderColor: '#b3402e', color: '#7a2418' }}>
               Anda login sebagai <span className="font-semibold">{user.role}</span>. Halaman ini khusus untuk alumni.
             </div>
           ) : null}
 
           {errorMessage ? (
-            <div className="mt-4 rounded-xl bg-accent/10 px-4 py-3 text-sm text-black/70 ring-1 ring-accent/30">
+            <div role="alert" className="mt-4 rounded-md border px-4 py-3 text-sm" style={{ background: '#fdf0ec', borderColor: '#b3402e', color: '#7a2418' }}>
               {errorMessage}
             </div>
           ) : null}
@@ -179,37 +185,42 @@ export default function AlumniVerification() {
           <div className="mt-5">
             {step === 1 && (
               <div className="space-y-3">
-                <label className="block text-sm font-medium text-black/70">
+                <label htmlFor="verify-otp" className="block text-sm font-medium" style={{ color: '#3d4a45' }}>
                   Kode OTP
                 </label>
                 <input
+                  id="verify-otp"
                   placeholder="Contoh: 123456"
                   value={otpInput}
-                  onChange={(e) => setOtpInput(e.target.value)} // Simpan OTP yang diketik user
-                  className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  onChange={(e) => setOtpInput(e.target.value)}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  className="input-base"
                 />
 
                 <div className="flex flex-wrap items-center gap-3">
                   <button
                     type="button"
-                    onClick={handleRequestOtp} // Minta OTP dari backend
+                    onClick={handleRequestOtp}
                     disabled={isSubmitting}
-                    className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-primary shadow-sm ring-1 ring-black/5 transition disabled:opacity-60"
+                    className="btn-ghost"
                   >
                     {isSubmitting ? 'Mengirim...' : 'Kirim OTP'}
                   </button>
                   <button
                     type="button"
-                    onClick={handleValidateOtp} // Validasi OTP di frontend (simulasi)
-                    className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+                    onClick={handleValidateOtp}
+                    disabled={isSubmitting}
+                    className="btn-primary"
                   >
                     Verifikasi OTP
                   </button>
                 </div>
 
                 {issuedOtp ? (
-                  <div className="rounded-xl bg-black/5 px-4 py-3 text-xs text-black/60">
-                    Simulasi OTP (untuk testing): <span className="font-semibold">{issuedOtp}</span>
+                  <div className="rounded-md border px-4 py-3 text-xs" style={{ background: '#fdf3d7', borderColor: '#e8a33d', color: '#5c3d05' }}>
+                    Simulasi OTP (mode demo — tidak ada email sungguhan):{' '}
+                    <span className="ledger-num font-bold">{issuedOtp}</span>
                   </div>
                 ) : null}
               </div>
@@ -217,36 +228,26 @@ export default function AlumniVerification() {
 
             {step === 2 && (
               <div className="space-y-3">
-                <label className="block text-sm font-medium text-black/70">
+                <label htmlFor="verify-doc" className="block text-sm font-medium" style={{ color: '#3d4a45' }}>
                   Tautan LinkedIn atau URL Dokumen
                 </label>
                 <input
+                  id="verify-doc"
                   placeholder="https://linkedin.com/in/..."
                   value={documentUrl}
-                  onChange={(e) => setDocumentUrl(e.target.value)} // Simpan URL dokumen
-                  className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  onChange={(e) => setDocumentUrl(e.target.value)}
+                  type="url"
+                  className="input-base"
                 />
 
                 <button
                   type="button"
-                  onClick={handleSubmitDocs} // Kirim dokumen ke backend
+                  onClick={handleSubmitDocs}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:opacity-60"
+                  className="btn-primary w-full"
                 >
                   {isSubmitting ? 'Mengirim...' : 'Submit Dokumen'}
                 </button>
-              </div>
-            )}
-
-            {step === 3 && (
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-black/70">
-                  Email Alumni Konfirmasi
-                </label>
-                <input
-                  placeholder="alumni.lain@usk.ac.id"
-                  className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                />
               </div>
             )}
           </div>
@@ -256,19 +257,13 @@ export default function AlumniVerification() {
               type="button"
               onClick={back}
               disabled={step === 1}
-              className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-primary shadow-sm ring-1 ring-black/5 transition disabled:opacity-50"
+              className="btn-ghost"
             >
-              &lt;- Kembali
+              ← Kembali
             </button>
-
-            <button
-              type="button"
-              onClick={next}
-              disabled={step === 1 || step === 2} // Step 1 & 2 harus lewat tombol aksi (OTP/doc) agar validasinya benar
-              className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
-            >
-              {step === 3 ? 'Selesai' : 'Lanjut ->'}
-            </button>
+            <span className="ledger-num text-xs" style={{ color: '#8a938a' }}>
+              Langkah {step} dari 2
+            </span>
           </div>
         </div>
       </div>
