@@ -23,7 +23,10 @@ export default defineConfig({
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
   ],
   webServer: {
-    command: 'npm run preview -- --port 4173 --strictPort',
+    // --host 127.0.0.1 WAJIB: vite preview default mengikat `localhost`
+    // yang bisa resolve ke ::1 saja, sementara Playwright mem-poll
+    // 127.0.0.1 — tanpa ini webServer timeout 60 detik (run CI pertama).
+    command: 'npm run preview -- --port 4173 --strictPort --host 127.0.0.1',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
